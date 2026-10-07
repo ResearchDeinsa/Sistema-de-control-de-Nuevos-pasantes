@@ -1,0 +1,23 @@
+Sistema-de-control-de-Nuevos-pasantes
++-- app
+|   +-- favicon.ico
+|   +-- globals.css
+|   +-- layout.tsx
+|   \-- page.tsx
++-- public
+|   +-- file.svg
+|   +-- globe.svg
+|   +-- next.svg
+|   +-- vercel.svg
+|   \-- window.svg
++-- .gitignore
++-- AGENTS.md
++-- CLAUDE.md
++-- eslint.config.mjs
++-- next.config.ts
++-- next-env.d.ts
++-- package.json
++-- package-lock.json
++-- postcss.config.mjs
++-- README.md
+\-- tsconfig.json

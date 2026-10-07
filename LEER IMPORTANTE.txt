@@ -1,0 +1,25 @@
+1. src/app/ — Lugar donde irá el frontend y el enrutador principal. 
+Cada carpeta aquí adentro que contenga un archivo page.tsx se convierte en una URL real de tu sistema 
+(ejemplo: src/app/admin/page.tsx será la pantalla /admin).
+
+2. src/components/ — Componentes visuales de React. 
+Aquí construyes y guardas las piezas reutilizables de la interfaz que no son pantallas completas, 
+como la línea de tiempo de los 7 días, el formulario para subir la evidencia o las tarjetas del catálogo de tecnologías.
+
+3. src/actions/ — Funciones de servidor (Server Actions) detonadas por el usuario. 
+Son los puentes entre el frontend y el backend que reciben directamente los datos cuando un pasante o mentor envía un formulario o hace clic en un botón 
+(por ejemplo, guardar la entrega de una práctica).
+
+4. src/services/ — Lógica pura de negocio y bases de datos. 
+Aquí programas las reglas y cálculos internos del sistema que no deben mezclarse con la interfaz, 
+como las consultas a Supabase, el recálculo automático del porcentaje de avance o el otorgamiento de insignias de gamificación.
+
+5. src/lib/ — Archivos de configuración general y utilidades. 
+Se usa para guardar el cliente que conecta tu proyecto con Supabase, así como pequeñas funciones de ayuda que usas en varias partes del código 
+(como formatear las fechas de las entregas).
+
+6. src/middleware.ts — El guardián de seguridad del sistema. Es un archivo que intercepta todas las peticiones web antes de que carguen; 
+se usa para verificar si el usuario inició sesión correctamente y bloquear el acceso al panel si el rol es "pasante" en lugar de "admin".
+
+7. src/app/api/ — Rutas para tu propia API (Route Handlers). Sirve para crear endpoints que comunican tu sistema con servicios externos de forma segura. 
+Aquí irá el archivo route.ts que se comunica con Gemini Studio para sugerir el feedback, asegurando que tu clave de IA nunca se exponga en el navegador de los pasantes.
