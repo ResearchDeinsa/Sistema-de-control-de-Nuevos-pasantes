@@ -1,0 +1,36 @@
+.dashboard-white-root {
+  color-scheme: light;
+  background-color: #ffffff;
+  color: #111827;
+  font-family: var(--font-dashboard-sans), "Plus Jakarta Sans", sans-serif;
+}
+
+.dashboard-white-root code,
+.dashboard-white-root pre,
+.dashboard-white-root .font-mono {
+  font-family: var(--font-dashboard-mono), "JetBrains Mono", monospace;
+}
+
+@media print {
+  @page {
+    size: landscape;
+    margin: 12mm;
+  }
+
+  body,
+  .dashboard-white-root {
+    background: #ffffff !important;
+    color: #111827 !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  #certificate-printable-sheet {
+    border: 2px solid #111827 !important;
+    box-shadow: none !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+}
