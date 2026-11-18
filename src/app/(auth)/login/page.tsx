@@ -20,10 +20,10 @@ export default function LoginPage() {
     const password = String(formData.get("password"));
 
     try {
-      const result = await login({ email, password });
+      const res = await login({ email, password });
 
-      if (!result.suscess) {
-        setError(result.message);
+      if (!res.success) {
+        setError(res.message);
         return;
       }
 

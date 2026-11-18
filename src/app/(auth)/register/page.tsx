@@ -3,8 +3,10 @@
 import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { signup } from "@/src/actions/auth";
+import { redirect, useRouter } from "next/navigation";
 
 export default function RegisterPage() {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -23,12 +25,15 @@ export default function RegisterPage() {
     try {
       const res = await signup({ name, email, password });
 
-      if (!res.suscess) {
+      if (!res.success) {
         setError(res.message);
         return;
       }
 
       setMessage(res.message);
+
+      router.push("/login");
+      router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Algo salió mal");
     } finally {

@@ -9,12 +9,12 @@ export async function login(formData: { email: string; password: string }) {
 
   if (error) {
     return {
-      error: true,
+      success: false,
       message: error.message,
     };
   }
   return {
-    suscess: true,
+    success: true,
     message: "Inicio de sesión exitoso",
     data: data,
   };
@@ -31,13 +31,13 @@ export async function signup(formData: {
 
   if (error) {
     return {
-      error: true,
+      success: false,
       message: error.message,
     };
   }
 
   return {
-    suscess: true,
+    success: true,
     message: "Registro exitoso",
     data: data,
   };
@@ -48,13 +48,13 @@ export async function forgotPassword(email: string) {
 
   if (error) {
     return {
-      error: true,
+      success: false,
       message: error.message,
     };
   }
 
   return {
-    suscess: true,
+    success: true,
     message: "Instrucciones para restablecer la contraseña enviadas",
   };
 }

@@ -19,15 +19,15 @@ export default function ForgotPasswordPage() {
     const email = String(formData.get("email"));
 
     try {
-      const result = await forgotPassword(email);
+      const res = await forgotPassword(email);
 
-      if (!result.suscess) {
+      if (!res.success) {
         //checar esto muy bien
-        setError(result.message);
+        setError(res.message);
         return;
       }
 
-      setMessage(result.message);
+      setMessage(res.message);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Algo salió mal");
     } finally {
