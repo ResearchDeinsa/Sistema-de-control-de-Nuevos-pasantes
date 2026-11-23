@@ -101,7 +101,7 @@ git push -u origin feat/mi-modulo`,
         ],
         codeTitle: "Sincronizar cambios del equipo en tu rama",
         codeLanguage: "bash",
-        codeSnippet: `git checkout valentina
+        codeSnippet: `git checkout feature/mi-modulo
 git fetch origin
 git merge origin/dev
 # Verifica que no haya conflictos ni errores de compilacion

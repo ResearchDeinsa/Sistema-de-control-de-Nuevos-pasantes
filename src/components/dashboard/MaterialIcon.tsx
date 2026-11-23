@@ -254,6 +254,45 @@ export function MaterialIcon({
             <circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none" />
           </>
         );
+      case "visibility":
+        return (
+          <>
+            <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
+            <circle cx="12" cy="12" r="3" fill={filled ? "currentColor" : "none"} />
+          </>
+        );
+      case "visibility_off":
+        return (
+          <>
+            <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
+            <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
+            <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
+            <line x1="2" y1="2" x2="22" y2="22" />
+          </>
+        );
+      case "admin_panel_settings":
+        return (
+          <>
+            <path d="M12 2 4 5v6c0 5.5 3.8 10.7 8 12 4.2-1.3 8-6.5 8-12V5l-8-3Z" fill={filled ? "currentColor" : "none"} fillOpacity={filled ? 0.16 : 0} />
+            <circle cx="12" cy="10" r="2.5" />
+            <path d="M8.5 16a4 4 0 0 1 7 0" />
+          </>
+        );
+      case "vpn_key":
+      case "key":
+        return (
+          <>
+            <path d="m21 2-2 2m-1.5 1.5L14 9l-2-2-4 4a5 5 0 1 0 7 7l4-4 2 2 3.5-3.5L21 9l2-2-2-5Z" />
+            <circle cx="7.5" cy="16.5" r="1.5" />
+          </>
+        );
+      case "mail":
+        return (
+          <>
+            <rect x="3" y="5" width="18" height="14" rx="2" />
+            <path d="m3 7 9 6 9-6" />
+          </>
+        );
       case "checklist":
         return (
           <>
@@ -423,6 +462,29 @@ export function MaterialIcon({
               fillOpacity={filled ? 0.18 : 0}
             />
             <path d="m18.5 14 .8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8.8-2.2Z" />
+          </>
+        );
+      case "delete":
+      case "delete_forever":
+      case "trash":
+        return (
+          <>
+            <path d="M3 6h18" />
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+            <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+            <line x1="10" y1="11" x2="10" y2="17" />
+            <line x1="14" y1="11" x2="14" y2="17" />
+          </>
+        );
+      case "drag_indicator":
+        return (
+          <>
+            <circle cx="9" cy="6" r="1.5" fill="currentColor" />
+            <circle cx="15" cy="6" r="1.5" fill="currentColor" />
+            <circle cx="9" cy="12" r="1.5" fill="currentColor" />
+            <circle cx="15" cy="12" r="1.5" fill="currentColor" />
+            <circle cx="9" cy="18" r="1.5" fill="currentColor" />
+            <circle cx="15" cy="18" r="1.5" fill="currentColor" />
           </>
         );
       default:

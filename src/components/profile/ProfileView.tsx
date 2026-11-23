@@ -11,6 +11,8 @@ import {
 } from "@/src/services/profileService";
 import { useDashboard } from "@/src/components/dashboard/DashboardProvider";
 import { MaterialIcon } from "@/src/components/dashboard/MaterialIcon";
+import { ModuleBadge } from "@/src/components/dashboard/ModuleBadge";
+import { MODULE_BADGES } from "@/src/services/moduleBadges";
 
 export function ProfileView() {
   const { profile } = useDashboard();
@@ -47,6 +49,7 @@ function ProfileViewInner({
     totalModules,
     allModulesCompleted,
     certificateId,
+    progress,
     updateProfileState,
     clearLocalSession,
   } = useDashboard();
@@ -202,6 +205,54 @@ function ProfileViewInner({
         </div>
       </section>
 
+      {/* Vitrina de Insignias Oficiales R&D */}
+      <section className="rounded-3xl border border-neutral-200 bg-white p-6 md:p-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-5 border-b border-neutral-100 gap-2">
+          <div>
+            <div className="flex items-center gap-2">
+              <MaterialIcon name="workspace_premium" size={22} className="text-orange-500" filled />
+              <h2 className="text-lg font-bold text-neutral-900">
+                Insignias Técnicas R&amp;D Obtenidas
+              </h2>
+            </div>
+            <p className="mt-1 text-xs text-neutral-500">
+              Cada módulo completado con su Masterclass en video y evaluación te otorga la insignia oficial con su logo tecnológico.
+            </p>
+          </div>
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-xs font-bold text-orange-700">
+            {completedCount} de {totalModules} Desbloqueadas
+          </span>
+        </div>
+
+        <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4">
+          {Object.entries(MODULE_BADGES).map(([modId, badge]) => {
+            const isUnlocked = progress.completedModuleIds.includes(modId);
+            return (
+              <div
+                key={modId}
+                className={`flex flex-col items-center justify-between rounded-2xl border p-3.5 text-center transition-all ${
+                  isUnlocked
+                    ? "border-emerald-200 bg-emerald-50/20 shadow-sm"
+                    : "border-neutral-200 bg-neutral-50/50 opacity-60"
+                }`}
+              >
+                <ModuleBadge moduleId={modId} isUnlocked={isUnlocked} size="md" />
+                <span className="mt-2 text-[11px] font-bold text-neutral-800 line-clamp-1">
+                  {badge.technology}
+                </span>
+                <span
+                  className={`mt-0.5 text-[10px] font-semibold ${
+                    isUnlocked ? "text-emerald-700" : "text-neutral-400"
+                  }`}
+                >
+                  {isUnlocked ? "Acreditado" : "Pendiente"}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
       {/* Grid principal: 3.2.2 Actualización de datos + 3.2.1 Cierre de sesión */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         {/* 3.2.2 Actualización de datos de usuario */}
@@ -234,7 +285,7 @@ function ProfileViewInner({
                   required
                   value={formState.firstName}
                   onChange={handleFieldChange}
-                  placeholder="Ej. Valentina"
+                  placeholder="Ej. Carlos"
                   className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-900 placeholder:text-neutral-400 outline-none transition-all focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
                 />
                 {fieldErrors.firstName && (
@@ -258,7 +309,7 @@ function ProfileViewInner({
                   required
                   value={formState.lastName}
                   onChange={handleFieldChange}
-                  placeholder="Ej. Burbano Silva"
+                  placeholder="Ej. Mendoza Castro"
                   className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-900 placeholder:text-neutral-400 outline-none transition-all focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
                 />
                 {fieldErrors.lastName && (
@@ -363,7 +414,7 @@ function ProfileViewInner({
                 type="text"
                 value={formState.githubHandle}
                 onChange={handleFieldChange}
-                placeholder="Ej. valentina-dev"
+                placeholder="Ej. pasante-dev"
                 className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-900 placeholder:text-neutral-400 outline-none transition-all focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
               />
               {fieldErrors.githubHandle && (
@@ -439,7 +490,7 @@ function ProfileViewInner({
               <button
                 type="submit"
                 disabled={saving}
-                className="inline-flex items-center gap-2 rounded-xl bg-orange-500 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-orange-600 disabled:opacity-50"
+                className="inline-flex items-center gap-2 rounded-xl bg-[#F05A28] px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#E04D1B] disabled:opacity-50 shadow-sm"
               >
                 <MaterialIcon name="save" size={18} />
                 {saving ? "Guardando..." : "Guardar cambios"}

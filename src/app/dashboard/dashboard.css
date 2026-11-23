@@ -1,6 +1,6 @@
 .dashboard-white-root {
   color-scheme: light;
-  background-color: #ffffff;
+  background-color: transparent;
   color: #111827;
   font-family: var(--font-dashboard-sans), "Plus Jakarta Sans", sans-serif;
 }

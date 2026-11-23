@@ -18,8 +18,8 @@ export interface ProfileValidationResult {
 
 export const DEFAULT_USER_PROFILE: UserProfile = {
   id: "lap-intern-001",
-  firstName: "Valentina",
-  lastName: "Burbano",
+  firstName: "Pasante",
+  lastName: "LAP",
   email: "pasante@deinsaglobal.com",
   role: "Pasante de Desarrollo",
   department: "Research & Development",
