@@ -58,13 +58,13 @@ export default function ModulesPage() {
       {/* Cabecera */}
       <header className="no-print flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between border-b border-neutral-100 pb-6">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-orange-600">
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#F05A28]">
             Ruta formativa progresiva · 8 tecnologías clave
           </p>
-          <h1 className="mt-1 text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900">
+          <h1 className="mt-1 text-2xl sm:text-3xl font-extrabold tracking-tight text-[#121316]">
             Módulos de enseñanza
           </h1>
-          <p className="mt-1.5 max-w-2xl text-sm text-neutral-600">
+          <p className="mt-1.5 max-w-2xl text-sm text-[#6C707A]">
             Cada módulo incluye lecciones guiadas, evaluación rápida y reto práctico.
             Los módulos permanecen bloqueados hasta aprobar el anterior.
           </p>
@@ -74,7 +74,7 @@ export default function ModulesPage() {
           {!allModulesCompleted && (
             <Link
               href={`/dashboard/modulos/${activeModule.slug}`}
-              className="inline-flex items-center gap-2 rounded-xl bg-orange-500 px-4 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-orange-600"
+              className="inline-flex items-center gap-2 rounded-xl bg-[#F05A28] px-4 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-[#E04D1B]"
             >
               Continuar: {activeModule.shortTitle}
               <MaterialIcon name="arrow_forward" size={16} />
@@ -82,9 +82,9 @@ export default function ModulesPage() {
           )}
           <a
             href="#certificado-final"
-            className="inline-flex items-center gap-1.5 rounded-xl border border-neutral-200 bg-white px-4 py-2.5 text-xs font-semibold text-neutral-700 hover:border-orange-300 hover:text-orange-700"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-[#EAE5DB] bg-white px-4 py-2.5 text-xs font-semibold text-[#121316] hover:border-[#F05A28] hover:text-[#F05A28]"
           >
-            <MaterialIcon name="workspace_premium" size={16} className="text-orange-500" />
+            <MaterialIcon name="workspace_premium" size={16} className="text-[#F05A28]" />
             Ir al certificado final
           </a>
         </div>

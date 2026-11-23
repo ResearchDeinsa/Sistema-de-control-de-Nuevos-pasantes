@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { OnboardingModule } from "@/src/services/onboardingModules";
 import type { ModuleStatus } from "./DashboardProvider";
 import { MaterialIcon } from "./MaterialIcon";
+import { ModuleBadge } from "./ModuleBadge";
 
 interface ModuleCardProps {
   module: OnboardingModule;
@@ -31,8 +32,8 @@ export function ModuleCard({
     },
     unlocked: {
       label: progressPercent > 0 ? `${progressPercent}%` : "Disponible",
-      badgeClass: "bg-orange-50 text-orange-700 border-orange-200",
-      barColor: "#F47F27",
+      badgeClass: "bg-[#F05A28]/10 text-[#F05A28] border-[#F05A28]/30",
+      barColor: "#F05A28",
       iconName: "play_circle",
     },
     locked: {
@@ -47,27 +48,36 @@ export function ModuleCard({
     <div
       className={`group relative flex h-full flex-col justify-between rounded-2xl border bg-white p-5 transition-all duration-200 ${
         isLocked
-          ? "border-neutral-200/80 opacity-80 cursor-not-allowed"
-          : "border-neutral-200 hover:border-orange-300 hover:shadow-[0_12px_30px_-16px_rgba(244,127,39,0.35)]"
+          ? "border-[#EAE5DB] opacity-80 cursor-not-allowed"
+          : "border-[#EAE5DB] hover:border-[#F05A28]/50 hover:shadow-[0_12px_30px_-16px_rgba(240,90,40,0.25)]"
       }`}
     >
       <div>
         {/* Fila 1: Icono de tecnología a la izquierda + Badge de estado a la derecha */}
         <div className="flex items-center justify-between gap-2">
-          <div
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border transition-colors"
-            style={{
-              backgroundColor: isLocked ? "#F8FAFC" : `${module.accentColor}12`,
-              borderColor: isLocked ? "#E5E7EB" : `${module.accentColor}28`,
-              color: isLocked ? "#9CA3AF" : module.accentColor,
-            }}
-          >
-            <MaterialIcon
-              name={isLocked ? "lock" : module.icon}
-              size={20}
-              filled={!isLocked}
-            />
-          </div>
+          {isCompleted ? (
+            <div className="flex items-center gap-2">
+              <ModuleBadge moduleId={module.id} isUnlocked={true} size="sm" />
+              <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                Insignia obtenida
+              </span>
+            </div>
+          ) : (
+            <div
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border transition-colors"
+              style={{
+                backgroundColor: isLocked ? "#F8FAFC" : `${module.accentColor}12`,
+                borderColor: isLocked ? "#E5E7EB" : `${module.accentColor}28`,
+                color: isLocked ? "#9CA3AF" : module.accentColor,
+              }}
+            >
+              <MaterialIcon
+                name={isLocked ? "lock" : module.icon}
+                size={20}
+                filled={!isLocked}
+              />
+            </div>
+          )}
 
           <span
             className={`inline-flex shrink-0 items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-semibold whitespace-nowrap ${statusConfig.badgeClass}`}
@@ -116,7 +126,7 @@ export function ModuleCard({
                 : `${module.lessons.length} lecciones · ${module.estimatedTime}`}
           </span>
           {!isLocked && (
-            <span className="inline-flex shrink-0 items-center gap-1 font-bold text-orange-600 group-hover:translate-x-0.5 transition-transform">
+            <span className="inline-flex shrink-0 items-center gap-1 font-bold text-[#F05A28] group-hover:translate-x-0.5 transition-transform">
               {isCompleted ? "Repasar" : "Estudiar"}
               <MaterialIcon name="arrow_forward" size={13} />
             </span>

@@ -1,28 +1,29 @@
 @import "tailwindcss";
 
 :root {
-  color-scheme: dark;
-
-  --background: #0f1115;
-  --foreground: #f5f6f8;
-  --surface: #1c1f26;
-  --surface-hover: #2e323b;
-  --border: #6b7280;
-  --text-secondary: #6b7280;
-  --text-support: #b4b8c2;
-}
-
-:root[data-theme="light"],
-:root.light {
   color-scheme: light;
 
-  --background: #f5f6f8;
-  --foreground: #0f1115;
+  --font-geist-sans: "Segoe UI", Arial, sans-serif;
+  --font-geist-mono: "Cascadia Mono", Consolas, monospace;
+  --font-dashboard-sans: "Segoe UI", Arial, sans-serif;
+  --font-dashboard-mono: "Cascadia Mono", Consolas, monospace;
+
+  /* Delphos / Deinsa Color Tokens */
+  --delphos-cream: #FAF7F2;
+  --delphos-cream-surface: #FFFFFF;
+  --delphos-cream-border: #EAE5DB;
+  --delphos-orange: #F05A28;
+  --delphos-orange-hover: #E04D1B;
+  --delphos-dark-sidebar: #131418;
+  --delphos-dark-card: #18191E;
+
+  --background: #FAF7F2;
+  --foreground: #121316;
   --surface: #ffffff;
-  --surface-hover: #f3f4f6;
-  --border: #d1d5db;
-  --text-secondary: #6b7280;
-  --text-support: #6b7280;
+  --surface-hover: #f5f1ea;
+  --border: #eae5db;
+  --text-secondary: #6c707a;
+  --text-support: #9ea2ae;
 }
 
 @theme inline {
@@ -34,24 +35,10 @@
   --color-border: var(--border);
   --color-text-secondary: var(--text-secondary);
   --color-text-support: var(--text-support);
-  --color-status-complete: #a8d5a2;
-  --color-status-current: #8fc4ec;
-  --color-status-future: #6b7280;
-  --color-status-pending: #6b7280;
-  --color-status-in-progress: #8fc4ec;
-  --color-status-done: #a8d5a2;
-  --color-status-contract-pending: #f3c089;
-  --color-status-submitted: #8fc4ec;
-  --color-status-signed: #a8d5a2;
-  --color-status-no-payments: #6b7280;
-  --color-status-partial: #8fc4ec;
-  --color-status-paid: #a8d5a2;
-  --color-status-overdue: #e8806e;
-  --color-status-new: #6b7280;
-  --color-status-contacted: #8fc4ec;
-  --color-status-proposal: #f3c089;
-  --color-status-won: #a8d5a2;
-  --color-status-lost: #b4b8c2;
+  --color-delphos-cream: #FAF7F2;
+  --color-delphos-orange: #F05A28;
+  --color-delphos-dark: #131418;
+  --color-delphos-card: #18191E;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }

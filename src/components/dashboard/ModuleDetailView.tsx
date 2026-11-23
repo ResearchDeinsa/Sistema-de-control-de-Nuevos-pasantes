@@ -7,8 +7,10 @@ import {
   ONBOARDING_MODULES,
   type OnboardingModule,
 } from "@/src/services/onboardingModules";
+import { getBadgeForModule } from "@/src/services/moduleBadges";
 import { useDashboard } from "./DashboardProvider";
 import { MaterialIcon } from "./MaterialIcon";
+import { ModuleBadge } from "./ModuleBadge";
 
 interface ModuleDetailViewProps {
   module: OnboardingModule;
@@ -21,6 +23,7 @@ export function ModuleDetailView({ module }: ModuleDetailViewProps) {
     getModuleStatus,
     getModuleProgressPercent,
     toggleLessonComplete,
+    toggleVideoWatched,
     markQuizPassed,
     completeModule,
   } = useDashboard();
@@ -31,27 +34,24 @@ export function ModuleDetailView({ module }: ModuleDetailViewProps) {
   const prevModule =
     module.order > 1 ? ONBOARDING_MODULES[module.order - 2] : undefined;
 
+  const badgeData = getBadgeForModule(module.id);
+
   const completedLessons = progress.completedLessonIds[module.id] ?? [];
   const allLessonsDone = module.lessons.every((lesson) =>
     completedLessons.includes(lesson.id)
   );
+
   const quizAlreadyPassed =
     progress.quizPassedIds.includes(module.id) || status === "completed";
 
-  const savedEvidence = progress.evidenceByModule[module.id];
+  const isVideoWatched =
+    (progress.watchedVideoIds ?? []).includes(module.id) ||
+    status === "completed";
 
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, number>>(
     {}
   );
   const [quizSubmitted, setQuizSubmitted] = useState(false);
-  const [evidenceText, setEvidenceText] = useState(
-    savedEvidence?.urlOrNote ?? ""
-  );
-  const [checklist, setChecklist] = useState<boolean[]>(() =>
-    savedEvidence?.checklistDone?.length === module.practiceChecklist.length
-      ? savedEvidence.checklistDone
-      : module.practiceChecklist.map(() => status === "completed")
-  );
   const [justCompleted, setJustCompleted] = useState(false);
 
   const quizScore = useMemo(() => {
@@ -60,10 +60,11 @@ export function ModuleDetailView({ module }: ModuleDetailViewProps) {
     }, 0);
   }, [module.quiz, selectedAnswers]);
 
-  const allChecklistChecked = checklist.every(Boolean);
-  const hasEvidence = evidenceText.trim().length >= 5;
-  const canUnlockNext =
-    allLessonsDone && quizAlreadyPassed && allChecklistChecked && hasEvidence;
+  // Requisitos simplificados según instrucción del usuario:
+  // 1. Mirar completo el video.
+  // 2. Mirar todos los materiales / lecciones del Paso 1.
+  // 3. Responder las preguntas finales (Paso 2) aprobadas (100% correctas).
+  const canUnlockNext = allLessonsDone && quizAlreadyPassed && isVideoWatched;
 
   function handleValidateQuiz() {
     setQuizSubmitted(true);
@@ -72,16 +73,12 @@ export function ModuleDetailView({ module }: ModuleDetailViewProps) {
     }
   }
 
-  function handleChecklistToggle(index: number) {
-    setChecklist((prev) => prev.map((val, i) => (i === index ? !val : val)));
-  }
-
   function handleCompleteModule(e: React.FormEvent) {
     e.preventDefault();
     if (!canUnlockNext) return;
     completeModule(module.id, {
-      urlOrNote: evidenceText,
-      checklistDone: checklist,
+      urlOrNote: `Aprobado con Masterclass en video e Insignia Oficial de ${module.technology}`,
+      checklistDone: [true, true, true],
     });
     setJustCompleted(true);
   }
@@ -98,7 +95,7 @@ export function ModuleDetailView({ module }: ModuleDetailViewProps) {
           Volver a los módulos
         </Link>
 
-        <div className="mt-6 rounded-3xl border border-neutral-200 bg-white p-8 md:p-10 text-center">
+        <div className="mt-6 rounded-3xl border border-neutral-200 bg-white p-8 md:p-10 text-center shadow-sm">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-neutral-200 bg-neutral-50 text-neutral-500">
             <MaterialIcon name="lock" size={32} filled />
           </div>
@@ -149,245 +146,178 @@ export function ModuleDetailView({ module }: ModuleDetailViewProps) {
           Volver al catálogo de módulos
         </Link>
 
-        <span className="text-xs font-semibold text-neutral-500">
-          Módulo {module.order} de {ONBOARDING_MODULES.length}
-        </span>
-      </div>
-
-      {/* Cabecera del módulo */}
-      <header className="rounded-3xl border border-neutral-200 bg-white p-6 md:p-8">
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-          <div className="max-w-3xl">
-            <div className="flex flex-wrap items-center gap-2.5">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-700">
-                <MaterialIcon name={module.icon} size={15} filled />
-                Módulo {String(module.order).padStart(2, "0")} · {module.category}
-              </span>
-              <span
-                className={`inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-semibold ${
-                  status === "completed"
-                    ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                    : "border-neutral-200 bg-neutral-50 text-neutral-700"
-                }`}
-              >
-                <MaterialIcon
-                  name={status === "completed" ? "check_circle" : "schedule"}
-                  size={15}
-                  filled={status === "completed"}
-                />
-                {status === "completed"
-                  ? "Completado"
-                  : `Duración estimada: ${module.estimatedTime}`}
-              </span>
-            </div>
-
-            <h1 className="mt-3 text-2xl sm:text-3xl font-extrabold tracking-tight text-neutral-900">
-              {module.technology}
-            </h1>
-            <p className="mt-2.5 text-sm sm:text-base leading-relaxed text-neutral-600">
-              {module.overview}
-            </p>
-          </div>
-
-          {/* Tarjeta de avance del módulo */}
-          <div className="w-full lg:w-64 shrink-0 rounded-2xl border border-neutral-200 bg-white p-4">
-            <div className="flex items-center justify-between text-xs font-semibold text-neutral-500">
-              <span>Avance del módulo</span>
-              <span className="text-neutral-900">{progressPercent}%</span>
-            </div>
-            <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-neutral-100">
-              <div
-                className="h-full rounded-full transition-all duration-500"
-                style={{
-                  width: `${progressPercent}%`,
-                  backgroundColor: status === "completed" ? "#10B981" : "#F47F27",
-                }}
-              />
-            </div>
-            <ul className="mt-3.5 space-y-2 text-xs text-neutral-600">
-              <li className="flex items-center gap-2">
-                <MaterialIcon
-                  name={allLessonsDone ? "check_circle" : "radio_button_unchecked"}
-                  size={16}
-                  filled={allLessonsDone}
-                  className={allLessonsDone ? "text-emerald-600" : "text-neutral-400"}
-                />
-                Lecciones ({completedLessons.length}/{module.lessons.length})
-              </li>
-              <li className="flex items-center gap-2">
-                <MaterialIcon
-                  name={quizAlreadyPassed ? "check_circle" : "radio_button_unchecked"}
-                  size={16}
-                  filled={quizAlreadyPassed}
-                  className={quizAlreadyPassed ? "text-emerald-600" : "text-neutral-400"}
-                />
-                Evaluación técnica
-              </li>
-              <li className="flex items-center gap-2">
-                <MaterialIcon
-                  name={status === "completed" ? "check_circle" : "radio_button_unchecked"}
-                  size={16}
-                  filled={status === "completed"}
-                  className={status === "completed" ? "text-emerald-600" : "text-neutral-400"}
-                />
-                Reto práctico entregado
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        {/* Ficha resumen: Qué aprende + Formato sugerido */}
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4 pt-6 border-t border-neutral-100">
-          <div className="rounded-2xl border border-neutral-200 bg-white p-4">
-            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-neutral-500">
-              <MaterialIcon name="target" size={16} className="text-orange-500" />
-              Qué debe aprender el pasante
-            </div>
-            <p className="mt-1.5 text-sm font-semibold text-neutral-900">
-              {module.whatInternLearns}
-            </p>
-          </div>
-          <div className="rounded-2xl border border-neutral-200 bg-white p-4">
-            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-neutral-500">
-              <MaterialIcon name="school" size={16} className="text-orange-500" />
-              Formato sugerido
-            </div>
-            <p className="mt-1.5 text-sm font-semibold text-neutral-900">
-              {module.suggestedFormat}
-            </p>
-          </div>
-        </div>
-      </header>
-
-      {/* Banner de éxito al completar el módulo */}
-      {(justCompleted || status === "completed") && (
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-2xl border border-emerald-200 bg-emerald-50/70 p-5">
-          <div className="flex items-start gap-3">
-            <MaterialIcon
-              name="verified"
-              size={24}
-              filled
-              className="text-emerald-600 shrink-0 mt-0.5"
-            />
-            <div>
-              <h2 className="text-sm font-bold text-emerald-900">
-                Módulo completado con éxito
-              </h2>
-              <p className="mt-0.5 text-xs sm:text-sm text-emerald-800">
-                {nextModule
-                  ? `Has desbloqueado el siguiente módulo: ${nextModule.technology}.`
-                  : "Has finalizado los 8 módulos técnicos. Tu Certificado Final oficial ya está disponible."}
-              </p>
-            </div>
-          </div>
-          {nextModule ? (
+        <div className="flex items-center gap-2">
+          {prevModule && (
+            <Link
+              href={`/dashboard/modulos/${prevModule.slug}`}
+              className="inline-flex items-center gap-1 rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-600 hover:bg-neutral-50"
+            >
+              <MaterialIcon name="arrow_back" size={14} />
+              {prevModule.shortTitle}
+            </Link>
+          )}
+          {nextModule && getModuleStatus(nextModule.id) !== "locked" && (
             <Link
               href={`/dashboard/modulos/${nextModule.slug}`}
-              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-emerald-700"
+              className="inline-flex items-center gap-1 rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-600 hover:bg-neutral-50"
             >
-              Siguiente: {nextModule.shortTitle}
-              <MaterialIcon name="arrow_forward" size={16} />
-            </Link>
-          ) : (
-            <Link
-              href="/dashboard/modulos#certificado-final"
-              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-orange-500 px-4 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-orange-600"
-            >
-              Ver Certificado Final
-              <MaterialIcon name="workspace_premium" size={16} />
+              {nextModule.shortTitle}
+              <MaterialIcon name="arrow_forward" size={14} />
             </Link>
           )}
         </div>
+      </div>
+
+      {/* Banner de Insignia Obtenida */}
+      {(status === "completed" || justCompleted) && badgeData && (
+        <div className="relative overflow-hidden rounded-3xl border-2 border-emerald-400 bg-gradient-to-r from-emerald-50 via-white to-orange-50 p-6 md:p-8 shadow-sm">
+          <div className="flex flex-col sm:flex-row items-center gap-6">
+            <ModuleBadge moduleId={module.id} isUnlocked={true} size="lg" />
+            <div className="text-center sm:text-left flex-1">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-100/70 px-3 py-1 text-xs font-bold text-emerald-800">
+                <MaterialIcon name="workspace_premium" size={16} filled />
+                ¡Insignia Oficial Obtenida!
+              </span>
+              <h3 className="mt-2 text-xl font-extrabold text-neutral-900">
+                {badgeData.badgeName}
+              </h3>
+              <p className="mt-1 text-sm text-neutral-600 max-w-xl">
+                {badgeData.description} Esta medalla ya se encuentra registrada en tu perfil de pasante y en tu acreditación de R&amp;D.
+              </p>
+            </div>
+            <div className="shrink-0 flex sm:flex-col gap-2">
+              <Link
+                href="/dashboard/perfil"
+                className="inline-flex items-center gap-1.5 rounded-xl border border-neutral-300 bg-white px-4 py-2 text-xs font-bold text-neutral-700 hover:bg-neutral-50 shadow-sm"
+              >
+                Ver en mi perfil
+                <MaterialIcon name="arrow_forward" size={14} />
+              </Link>
+              {nextModule && (
+                <Link
+                  href={`/dashboard/modulos/${nextModule.slug}`}
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-orange-500 px-4 py-2 text-xs font-bold text-white hover:bg-orange-600 shadow-sm"
+                >
+                  Siguiente módulo
+                  <MaterialIcon name="arrow_forward" size={14} />
+                </Link>
+              )}
+            </div>
+          </div>
+        </div>
       )}
 
-      {/* Objetivos y Recursos */}
-      <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 rounded-2xl border border-neutral-200 bg-white p-6">
-          <h2 className="flex items-center gap-2 text-base font-bold text-neutral-900">
-            <MaterialIcon name="checklist" size={20} className="text-orange-500" />
+      {/* Hero del Módulo */}
+      <header className="rounded-3xl border border-[#EAE5DB] bg-white p-6 md:p-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex items-start gap-4">
+            <ModuleBadge moduleId={module.id} isUnlocked={status === "completed"} size="md" />
+
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="rounded-full border border-[#EAE5DB] bg-[#FAF7F2] px-2.5 py-0.5 text-xs font-semibold text-neutral-600">
+                  Módulo {String(module.order).padStart(2, "0")} · {module.category}
+                </span>
+                <span className="rounded-full border border-[#EAE5DB] bg-[#FAF7F2] px-2.5 py-0.5 text-xs font-semibold text-neutral-600">
+                  {module.estimatedTime}
+                </span>
+              </div>
+              <h1 className="mt-2 text-2xl sm:text-3xl font-extrabold tracking-tight text-[#121316]">
+                {module.technology}
+              </h1>
+              <p className="mt-1 text-sm text-[#6C707A] max-w-2xl">
+                {module.overview}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-col items-end gap-1.5 self-start sm:self-auto">
+            <span
+              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold ${
+                status === "completed"
+                  ? "border border-emerald-200 bg-emerald-50 text-emerald-700"
+                  : "border border-[#F05A28]/30 bg-[#F05A28]/10 text-[#F05A28]"
+              }`}
+            >
+              <MaterialIcon
+                name={status === "completed" ? "check_circle" : "hourglass_top"}
+                size={14}
+                filled
+              />
+              {status === "completed" ? "Módulo completado" : "En progreso"}
+            </span>
+            <span className="text-xs font-semibold text-neutral-500">
+              {progressPercent}% completado
+            </span>
+          </div>
+        </div>
+
+        {/* Barra de progreso visual */}
+        <div className="mt-6">
+          <div className="h-2 w-full overflow-hidden rounded-full bg-neutral-100">
+            <div
+              className={`h-full transition-all duration-500 ${
+                status === "completed" ? "bg-emerald-500" : "bg-[#F05A28]"
+              }`}
+              style={{ width: `${progressPercent}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Objetivos clave */}
+        <div className="mt-6 rounded-2xl border border-neutral-100 bg-neutral-50/70 p-4">
+          <p className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">
             Objetivos de aprendizaje
-          </h2>
-          <ul className="mt-4 space-y-2.5">
-            {module.objectives.map((objective, idx) => (
-              <li key={idx} className="flex items-start gap-2.5 text-sm text-neutral-700">
+          </p>
+          <ul className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs sm:text-sm text-neutral-700">
+            {module.objectives.map((obj, idx) => (
+              <li key={idx} className="flex items-start gap-2">
                 <MaterialIcon
                   name="check"
-                  size={18}
-                  className="text-orange-500 shrink-0 mt-0.5"
+                  size={16}
+                  className="text-emerald-600 shrink-0 mt-0.5"
                 />
-                <span>{objective}</span>
+                <span>{obj}</span>
               </li>
             ))}
           </ul>
         </div>
+      </header>
 
-        <div className="rounded-2xl border border-neutral-200 bg-white p-6">
-          <h2 className="flex items-center gap-2 text-base font-bold text-neutral-900">
-            <MaterialIcon name="library_books" size={20} className="text-orange-500" />
-            Documentación oficial
-          </h2>
-          <div className="mt-4 space-y-2.5">
-            {module.resources.map((res) => (
-              <a
-                key={res.url}
-                href={res.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-between gap-3 rounded-xl border border-neutral-200 bg-white px-3.5 py-3 text-sm transition-colors hover:border-orange-300 hover:bg-orange-50/30"
-              >
-                <div>
-                  <p className="font-semibold text-neutral-900 text-xs sm:text-sm">
-                    {res.label}
-                  </p>
-                  <p className="text-[11px] font-medium text-neutral-500">
-                    {res.type}
-                  </p>
-                </div>
-                <MaterialIcon
-                  name="open_in_new"
-                  size={16}
-                  className="text-neutral-400 shrink-0"
-                />
-              </a>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* PASO 1: Lecciones formativas */}
-      <section className="space-y-4">
-        <div className="flex items-center justify-between">
+      {/* PASO 1: Materiales de Aprendizaje y Lecciones */}
+      <section className="rounded-3xl border border-neutral-200 bg-white p-6 md:p-8">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between pb-5 border-b border-neutral-100">
           <div>
             <span className="text-xs font-bold uppercase tracking-wider text-orange-600">
-              Paso 1 de 3 · Contenido formativo
+              Paso 1 de 3 · Materiales y Lecciones
             </span>
             <h2 className="mt-0.5 text-xl font-bold text-neutral-900">
-              Lecciones y guía técnica
+              Guía técnica y conceptos fundamentales
             </h2>
           </div>
           <span className="text-xs font-semibold text-neutral-500">
-            {completedLessons.length} de {module.lessons.length} completadas
+            {completedLessons.length} de {module.lessons.length} lecciones vistas
           </span>
         </div>
 
-        <div className="space-y-4">
+        <div className="mt-6 space-y-6">
           {module.lessons.map((lesson, idx) => {
             const done = completedLessons.includes(lesson.id);
             return (
               <article
                 key={lesson.id}
-                className={`rounded-2xl border bg-white p-6 transition-colors ${
-                  done ? "border-emerald-200" : "border-neutral-200"
+                className={`rounded-2xl border p-5 sm:p-6 transition-all ${
+                  done
+                    ? "border-emerald-200 bg-emerald-50/20"
+                    : "border-neutral-200 bg-white"
                 }`}
               >
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                  <div>
-                    <div className="flex items-center gap-2 text-xs font-semibold text-neutral-500">
-                      <span>Lección {idx + 1}</span>
-                      <span>·</span>
-                      <span>{lesson.duration}</span>
-                    </div>
-                    <h3 className="mt-1 text-lg font-bold text-neutral-900">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-neutral-100 text-xs font-bold text-neutral-700">
+                      {idx + 1}
+                    </span>
+                    <h3 className="text-base font-bold text-neutral-900">
                       {lesson.title}
                     </h3>
                   </div>
@@ -395,7 +325,7 @@ export function ModuleDetailView({ module }: ModuleDetailViewProps) {
                   <button
                     type="button"
                     onClick={() => toggleLessonComplete(module.id, lesson.id)}
-                    className={`inline-flex shrink-0 items-center gap-1.5 rounded-xl border px-3.5 py-2 text-xs font-semibold transition-colors ${
+                    className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer ${
                       done
                         ? "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
                         : "border-neutral-200 bg-white text-neutral-700 hover:border-orange-300 hover:text-orange-700"
@@ -469,7 +399,7 @@ export function ModuleDetailView({ module }: ModuleDetailViewProps) {
           {quizAlreadyPassed && (
             <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
               <MaterialIcon name="check_circle" size={15} filled />
-              Evaluación aprobada
+              Evaluación aprobada (3/3)
             </span>
           )}
         </div>
@@ -518,7 +448,7 @@ export function ModuleDetailView({ module }: ModuleDetailViewProps) {
                             [q.id]: oIdx,
                           }));
                         }}
-                        className={`flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left text-sm transition-colors ${optionStyle}`}
+                        className={`flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left text-sm transition-colors cursor-pointer ${optionStyle}`}
                       >
                         <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-current text-xs font-bold">
                           {String.fromCharCode(65 + oIdx)}
@@ -549,7 +479,7 @@ export function ModuleDetailView({ module }: ModuleDetailViewProps) {
             type="button"
             onClick={handleValidateQuiz}
             disabled={Object.keys(selectedAnswers).length < module.quiz.length}
-            className="inline-flex items-center gap-2 rounded-xl bg-neutral-900 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-neutral-800 disabled:opacity-40 disabled:cursor-not-allowed"
+            className="inline-flex items-center gap-2 rounded-xl bg-neutral-900 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-neutral-800 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
           >
             <MaterialIcon name="fact_check" size={18} />
             Validar respuestas
@@ -571,76 +501,122 @@ export function ModuleDetailView({ module }: ModuleDetailViewProps) {
         </div>
       </section>
 
-      {/* PASO 3: Reto práctico y Gating para desbloquear el siguiente módulo */}
-      <section className="rounded-3xl border border-neutral-200 bg-white p-6 md:p-8">
-        <span className="text-xs font-bold uppercase tracking-wider text-orange-600">
-          Paso 3 de 3 · Práctica y desbloqueo progresivo
-        </span>
-        <h2 className="mt-0.5 text-xl font-bold text-neutral-900">
-          {module.practiceTitle}
-        </h2>
-        <p className="mt-2 text-sm leading-relaxed text-neutral-600">
-          {module.practiceDescription}
-        </p>
-
-        <form onSubmit={handleCompleteModule} className="mt-6 space-y-5">
+      {/* PASO 3: Masterclass en Video de YouTube & Desbloqueo de Insignia */}
+      <section className="rounded-3xl border border-[#EAE5DB] bg-white p-6 md:p-8">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between pb-5 border-b border-[#EAE5DB]">
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-3">
-              Criterios de entrega
-            </p>
-            <div className="space-y-2.5">
-              {module.practiceChecklist.map((item, idx) => (
-                <label
-                  key={idx}
-                  className="flex cursor-pointer items-start gap-3 rounded-xl border border-neutral-200 bg-white p-3.5 transition-colors hover:border-orange-300"
-                >
-                  <input
-                    type="checkbox"
-                    checked={Boolean(checklist[idx])}
-                    onChange={() => handleChecklistToggle(idx)}
-                    className="mt-0.5 h-4 w-4 rounded border-neutral-300 accent-orange-500"
-                  />
-                  <span className="text-sm text-neutral-700">{item}</span>
-                </label>
-              ))}
-            </div>
+            <span className="text-xs font-bold uppercase tracking-wider text-[#F05A28]">
+              Paso 3 de 3 · Masterclass en Video &amp; Acreditación
+            </span>
+            <h2 className="mt-0.5 text-xl font-bold text-[#121316]">
+              Video tutorial formativo de {module.technology}
+            </h2>
           </div>
 
-          <div>
-            <label
-              htmlFor="module-evidence"
-              className="block text-sm font-semibold text-neutral-800 mb-1.5"
-            >
-              Evidencia de entrega (enlace a repositorio, PR, flujo o notas técnicas)
-            </label>
-            <textarea
-              id="module-evidence"
-              rows={3}
-              value={evidenceText}
-              onChange={(e) => setEvidenceText(e.target.value)}
-              placeholder={module.evidencePlaceholder}
-              className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 text-sm text-neutral-900 placeholder:text-neutral-400 outline-none transition-all focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+          {isVideoWatched && (
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+              <MaterialIcon name="check_circle" size={15} filled />
+              Video completado al 100%
+            </span>
+          )}
+        </div>
+
+        <p className="mt-4 text-sm leading-relaxed text-neutral-600">
+          Para acreditar este módulo y conseguir tu{" "}
+          <strong className="text-neutral-900">Insignia Oficial de {module.technology}</strong>
+          , reproduce la masterclass completa a continuación. Los líderes del departamento de R&amp;D han seleccionado este video con los fundamentos indispensables.
+        </p>
+
+        {/* Reproductor de Video de YouTube con margen estilizado */}
+        <div className="mt-6 overflow-hidden rounded-2xl border border-neutral-200 bg-neutral-900 shadow-md">
+          {/* Barra superior de información del video */}
+          <div className="flex items-center justify-between border-b border-neutral-800 bg-neutral-950 px-4 py-2.5 text-xs text-neutral-300">
+            <span className="flex items-center gap-2 font-medium">
+              <span className="flex h-2 w-2 rounded-full bg-red-500 animate-pulse" />
+              {badgeData?.videoTitle ?? `Masterclass oficial: ${module.technology}`}
+            </span>
+            <span className="font-mono text-neutral-400">
+              {badgeData?.videoDuration ?? "30 min"}
+            </span>
+          </div>
+
+          {/* Iframe 16:9 responsive */}
+          <div className="relative w-full aspect-video">
+            <iframe
+              src={badgeData?.youtubeUrl ?? "https://www.youtube.com/embed/RGOj5yH7evk"}
+              title={`Video de formación ${module.technology}`}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+              className="absolute inset-0 h-full w-full border-0"
             />
           </div>
 
+          {/* Barra inferior de confirmación de visualización */}
+          <div className="flex flex-wrap items-center justify-between gap-3 bg-neutral-950 p-4 text-xs text-neutral-400">
+            <div className="flex items-center gap-2">
+              <MaterialIcon name="play_circle" size={18} className="text-red-500" />
+              <span>Instrucción R&amp;D: Mira el video atentamente antes de finalizar el módulo.</span>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => toggleVideoWatched(module.id)}
+              className={`inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-bold transition-all cursor-pointer ${
+                isVideoWatched
+                  ? "bg-emerald-600 text-white hover:bg-emerald-700"
+                  : "bg-white/10 text-white hover:bg-white/20 border border-white/20"
+              }`}
+            >
+              <MaterialIcon
+                name={isVideoWatched ? "check_circle" : "visibility"}
+                size={16}
+                filled={isVideoWatched}
+              />
+              {isVideoWatched ? "¡Video visto al 100%!" : "Marcar video como visto"}
+            </button>
+          </div>
+        </div>
+
+        {/* Tarjeta de Insignia a Desbloquear */}
+        {badgeData && (
+          <div className="mt-6 rounded-2xl border border-neutral-200 bg-neutral-50/70 p-5 flex flex-col sm:flex-row items-center gap-5">
+            <ModuleBadge moduleId={module.id} isUnlocked={status === "completed"} size="md" />
+            <div className="flex-1 text-center sm:text-left">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-500">
+                Insignia oficial a acreditar
+              </span>
+              <h4 className="text-base font-extrabold text-neutral-900">
+                {badgeData.badgeName}
+              </h4>
+              <p className="text-xs text-neutral-600 mt-0.5">
+                Al completar este módulo se otorgará esta insignia con el logo oficial de {module.technology} para tu expediente técnico de pasante.
+              </p>
+            </div>
+            {status === "completed" && (
+              <span className="rounded-full border border-emerald-300 bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-800">
+                Desbloqueada
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Formulario de Aprobación Final */}
+        <form onSubmit={handleCompleteModule} className="mt-6 space-y-5">
           {/* Requisitos pendientes para desbloquear */}
           {!canUnlockNext && status !== "completed" && (
-            <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-4 text-xs text-neutral-600">
-              <p className="font-semibold text-neutral-800 mb-1.5">
-                Para habilitar el botón de aprobación y desbloquear el siguiente módulo debes completar:
+            <div className="rounded-xl border border-[#F05A28]/30 bg-[#F05A28]/10 p-4 text-xs text-neutral-700">
+              <p className="font-bold text-[#F05A28] mb-1.5">
+                Para completar el módulo y recibir tu Insignia debes cumplir:
               </p>
-              <ul className="space-y-1 list-disc pl-4">
+              <ul className="space-y-1 list-disc pl-4 font-medium text-neutral-700">
                 {!allLessonsDone && (
-                  <li>Marcar todas las lecciones del Paso 1 como vistas.</li>
+                  <li>Marcar todas las lecciones del Paso 1 como vistas ({completedLessons.length}/{module.lessons.length}).</li>
+                )}
+                {!isVideoWatched && (
+                  <li>Ver y marcar el video de YouTube del Paso 3 como completado.</li>
                 )}
                 {!quizAlreadyPassed && (
                   <li>Aprobar la evaluación rápida del Paso 2 (3/3 respuestas correctas).</li>
-                )}
-                {!allChecklistChecked && (
-                  <li>Confirmar todos los criterios de la lista de entrega.</li>
-                )}
-                {!hasEvidence && (
-                  <li>Ingresar tu enlace o descripción de evidencia (mínimo 5 caracteres).</li>
                 )}
               </ul>
             </div>
@@ -650,17 +626,17 @@ export function ModuleDetailView({ module }: ModuleDetailViewProps) {
             <button
               type="submit"
               disabled={!canUnlockNext}
-              className="inline-flex items-center gap-2 rounded-xl bg-orange-500 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-orange-600 disabled:bg-neutral-200 disabled:text-neutral-500 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-2 rounded-xl bg-[#F05A28] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#E04D1B] disabled:bg-neutral-200 disabled:text-neutral-500 disabled:cursor-not-allowed cursor-pointer shadow-sm"
             >
               <MaterialIcon
-                name={nextModule ? "lock_open" : "workspace_premium"}
+                name={nextModule ? "workspace_premium" : "emoji_events"}
                 size={18}
               />
               {status === "completed"
-                ? "Actualizar evidencia del módulo"
+                ? "Módulo completado e Insignia activa"
                 : nextModule
-                  ? `Aprobar módulo y desbloquear ${nextModule.shortTitle}`
-                  : "Completar último módulo y emitir Certificado"}
+                  ? `Completar módulo y obtener Insignia de ${module.technology}`
+                  : "Completar último módulo y emitir Certificado Final"}
             </button>
 
             {status === "completed" && nextModule && (

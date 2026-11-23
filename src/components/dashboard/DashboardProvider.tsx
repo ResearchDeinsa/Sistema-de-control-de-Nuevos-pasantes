@@ -29,6 +29,7 @@ export interface OnboardingProgressState {
   completedModuleIds: string[];
   completedLessonIds: Record<string, string[]>;
   quizPassedIds: string[];
+  watchedVideoIds: string[];
   evidenceByModule: Record<string, ModuleEvidence>;
   completedAllAt: string | null;
   streakDays: number;
@@ -38,6 +39,7 @@ const DEFAULT_PROGRESS: OnboardingProgressState = {
   completedModuleIds: [],
   completedLessonIds: {},
   quizPassedIds: [],
+  watchedVideoIds: [],
   evidenceByModule: {},
   completedAllAt: null,
   streakDays: 1,
@@ -105,6 +107,9 @@ function parseProgress(raw: string | null): OnboardingProgressState {
       quizPassedIds: Array.isArray(parsed.quizPassedIds)
         ? parsed.quizPassedIds
         : [],
+      watchedVideoIds: Array.isArray(parsed.watchedVideoIds)
+        ? parsed.watchedVideoIds
+        : [],
       evidenceByModule:
         parsed.evidenceByModule && typeof parsed.evidenceByModule === "object"
           ? parsed.evidenceByModule
@@ -134,6 +139,7 @@ interface DashboardContextValue {
   getModuleStatus: (moduleId: string) => ModuleStatus;
   getModuleProgressPercent: (mod: OnboardingModule) => number;
   toggleLessonComplete: (moduleId: string, lessonId: string) => void;
+  toggleVideoWatched: (moduleId: string) => void;
   markQuizPassed: (moduleId: string) => void;
   completeModule: (
     moduleId: string,
@@ -156,8 +162,13 @@ export function DashboardProvider({
   authenticated,
   children,
 }: DashboardProviderProps) {
-  const progressKey = getStorageKey(initialProfile.id, "progress_v1");
-  const profileKey = getStorageKey(initialProfile.id, "profile_v1");
+  const activeUserId =
+    (typeof window !== "undefined" &&
+      window.localStorage.getItem("deinsa_lap_current_user_id")) ||
+    initialProfile.id;
+
+  const progressKey = getStorageKey(activeUserId, "progress_v1");
+  const profileKey = getStorageKey(activeUserId, "profile_v1");
 
   const rawProgress = useSyncExternalStore(
     subscribeStorage,
@@ -220,18 +231,35 @@ export function DashboardProvider({
 
       const doneLessons = progress.completedLessonIds[mod.id]?.length ?? 0;
       const totalLessons = Math.max(1, mod.lessons.length);
-      const lessonsScore = (doneLessons / totalLessons) * 55;
-      const quizScore = progress.quizPassedIds.includes(mod.id) ? 25 : 0;
-      const evidenceScore = progress.evidenceByModule[mod.id]?.urlOrNote ? 20 : 0;
+      const lessonsScore = (doneLessons / totalLessons) * 40;
+      const quizScore = progress.quizPassedIds.includes(mod.id) ? 35 : 0;
+      const isVideoWatched = (progress.watchedVideoIds ?? []).includes(mod.id);
+      const videoScore = isVideoWatched ? 25 : 0;
 
-      return Math.min(99, Math.round(lessonsScore + quizScore + evidenceScore));
+      return Math.min(99, Math.round(lessonsScore + quizScore + videoScore));
     },
     [
       getModuleStatus,
       progress.completedLessonIds,
-      progress.evidenceByModule,
       progress.quizPassedIds,
+      progress.watchedVideoIds,
     ]
+  );
+
+  const toggleVideoWatched = useCallback(
+    (moduleId: string) => {
+      const currentProgress = parseProgress(readRawStorage(progressKey));
+      const current = currentProgress.watchedVideoIds ?? [];
+      const exists = current.includes(moduleId);
+      const updated = exists
+        ? current.filter((id) => id !== moduleId)
+        : [...current, moduleId];
+      persistProgress({
+        ...currentProgress,
+        watchedVideoIds: updated,
+      });
+    },
+    [persistProgress, progressKey]
   );
 
   const toggleLessonComplete = useCallback(
@@ -316,6 +344,9 @@ export function DashboardProvider({
   );
 
   const clearLocalSession = useCallback(() => {
+    if (typeof window !== "undefined") {
+      window.localStorage.removeItem("deinsa_lap_current_user_id");
+    }
     writeRawStorage(profileKey, null);
   }, [profileKey]);
 
@@ -360,6 +391,7 @@ export function DashboardProvider({
       getModuleStatus,
       getModuleProgressPercent,
       toggleLessonComplete,
+      toggleVideoWatched,
       markQuizPassed,
       completeModule,
       updateProfileState,
@@ -380,6 +412,7 @@ export function DashboardProvider({
       profile,
       progress,
       toggleLessonComplete,
+      toggleVideoWatched,
       totalModules,
       updateProfileState,
     ]
