@@ -41,3 +41,48 @@ plataforma, con control de avance por módulos y visibilidad total para los líd
 | `practices`                | Ejercicios y retos ligados a cada tutorial o módulo, con su criterio de validación. |
 | `badges` _(Opcional)_      | Insignias otorgadas por tecnología dominada o módulo completado.                    |
 | `feedback_ai` _(Opcional)_ | Sugerencias y retroalimentación generadas por IA                                    |
+
+## Modulo 1: Git Hub
+
+### Presentacion CAPACITACIÓN GITHUB
+
+"Deinsa Global - Por Jocelyn Rivera y Diago Garcia"
+
+- ¿Qué es Git y Git Hub?
+- ¿Por qué Git Hub?
+- Términos importantes.
+- Comandos importantes.
+
+### Presentacion CAPACITACIÓN GITHUB Avanzada
+
+- ¿Qué es GitHub Flow?
+- Principales Características de GitHub Flow
+- Trabajo en Equipo y Sincronización
+- Pull Requests
+- Merge vs. Rebase
+
+### Manual GitHub
+
+- ¿Qué es Git hub?
+- Términos importantes de Git Hub
+- Configurar el Visual Studio Code
+- Crea tu primer repositorio
+- Clone el repositorio
+- Ramas
+- Fusionar Ramas
+- Eliminar Ramas
+- Commit
+- Como borrar un repositorio
+- Borrar Practicas
+
+### Links
+
+Descargar Git: https://www.youtube.com/watch?v=jdXKwLNUfmg
+
+Crear Una Cuenta:
+https://www.youtube.com/watch?v=74toewU92Fw
+
+Curso de Git: Curso interactivo para aprerder git hub https://www.freecodecamp.org/espanol/news/aprende-git-y-github-curso-desde-cero/
+
+Curso de Git Hub para el control de cambios a la hora de trabajar en equipo:
+https://edutin.com/curso-de-github
